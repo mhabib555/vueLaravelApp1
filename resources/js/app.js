@@ -66,6 +66,9 @@ window.Toast = Swal.mixin({
     }
 })
   
+// create an event
+window.fireEvent = new Vue();
+
 
 /**
  * The following block of code may be used to automatically register your

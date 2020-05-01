@@ -2136,6 +2136,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2168,8 +2169,7 @@ __webpack_require__.r(__webpack_exports__);
             icon: 'success',
             title: 'User created successfully'
           });
-
-          _this.loadUsers();
+          fireEvent.$emit('newUserCreated'); // this.loadUsers();
 
           _this.$Progress.finish();
         }
@@ -2186,15 +2186,45 @@ __webpack_require__.r(__webpack_exports__);
 
         _this2.$Progress.finish();
       });
+    },
+    resetNewUserForm: function resetNewUserForm() {
+      this.form.reset();
+    },
+    deleteUser: function deleteUser() {
+      var _this3 = this;
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then(function (result) {
+        if (result.value) {
+          _this3.$Progress.start();
+
+          axios["delete"]('api/users').then(function (_ref3) {
+            var data = _ref3.data;
+            _this3.users = data;
+            console.log(data);
+
+            _this3.$Progress.finish();
+          });
+          Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+        }
+      });
     }
   },
   created: function created() {
-    var _this3 = this;
+    var _this4 = this;
 
-    this.loadUsers();
-    setInterval(function () {
-      return _this3.loadUsers();
-    }, 3000);
+    this.loadUsers(); // setInterval(()=>this.loadUsers(),3000);
+
+    fireEvent.$on('newUserCreated', function () {
+      _this4.loadUsers();
+    });
   }
 });
 
@@ -42151,7 +42181,22 @@ var render = function() {
                     _vm._v(" "),
                     _c("td", [_vm._v(_vm._s(user.created_at))]),
                     _vm._v(" "),
-                    _vm._m(2, true)
+                    _c("td", [
+                      _c(
+                        "a",
+                        {
+                          attrs: { href: "#" },
+                          on: {
+                            click: function($event) {
+                              return _vm.deleteUser(user.id)
+                            }
+                          }
+                        },
+                        [_c("i", { staticClass: "fas fa-edit text-orange" })]
+                      ),
+                      _vm._v(" "),
+                      _vm._m(2, true)
+                    ])
                   ])
                 }),
                 0
@@ -42475,6 +42520,16 @@ var render = function() {
                     _c(
                       "button",
                       {
+                        staticClass: "btn btn-warning",
+                        attrs: { type: "button" },
+                        on: { click: _vm.resetNewUserForm }
+                      },
+                      [_vm._v("Reset")]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
                         staticClass: "btn btn-secondary",
                         attrs: { type: "button", "data-dismiss": "modal" }
                       },
@@ -42537,14 +42592,8 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("td", [
-      _c("a", { attrs: { href: "#" } }, [
-        _c("i", { staticClass: "fas fa-edit text-orange" })
-      ]),
-      _vm._v(" "),
-      _c("a", { attrs: { href: "#" } }, [
-        _c("i", { staticClass: "fa fa-trash text-red" })
-      ])
+    return _c("a", { attrs: { href: "#" } }, [
+      _c("i", { staticClass: "fa fa-trash text-red" })
     ])
   },
   function() {
@@ -57750,7 +57799,9 @@ window.Toast = sweetalert2__WEBPACK_IMPORTED_MODULE_3___default.a.mixin({
     toast.addEventListener('mouseenter', sweetalert2__WEBPACK_IMPORTED_MODULE_3___default.a.stopTimer);
     toast.addEventListener('mouseleave', sweetalert2__WEBPACK_IMPORTED_MODULE_3___default.a.resumeTimer);
   }
-});
+}); // create an event
+
+window.fireEvent = new Vue();
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue

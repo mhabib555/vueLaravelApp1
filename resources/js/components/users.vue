@@ -34,7 +34,7 @@
                       <td><span class="tag tag-success">{{user.type |capitalaizeFirstText}}</span></td>
                       <td>{{user.created_at }}</td>
                       <td>
-                          <a href="#">
+                          <a href="#" @click="deleteUser(user.id)">
                               <i class="fas fa-edit text-orange"></i>
                           </a>
                           <a href="#">
@@ -101,6 +101,7 @@
                     </div>
                     <div class="modal-footer">
                         <button :disabled="form.busy" type="submit" class="btn btn-primary">Create</button>
+                        <button type="button" v-on:click="resetNewUserForm" class="btn btn-warning">Reset</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                     </form>
@@ -140,7 +141,8 @@
                                 icon: 'success',
                                 title: 'User created successfully'
                             })
-                            this.loadUsers();
+                            fireEvent.$emit('newUserCreated');
+                            // this.loadUsers();
                             this.$Progress.finish();
                         }
                     });
@@ -152,11 +154,43 @@
                     console.log(data);
                     this.$Progress.finish();
                 });
+            },
+            resetNewUserForm(){
+                this.form.reset();
+            },
+            deleteUser(){
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.value) {
+                        this.$Progress.start();
+                        axios.delete('api/users').then(({ data }) => {
+                            this.users = data;
+                            console.log(data);
+                            this.$Progress.finish();
+                        });
+                        Swal.fire(
+                            'Deleted!',
+                            'Your file has been deleted.',
+                            'success'
+                            )
+                    }
+                })
+
             }
         },
         created(){
             this.loadUsers();
-            setInterval(()=>this.loadUsers(),3000);
+            // setInterval(()=>this.loadUsers(),3000);
+            fireEvent.$on('newUserCreated', ()=>{
+                this.loadUsers();
+            });
         }
     }
 </script>
