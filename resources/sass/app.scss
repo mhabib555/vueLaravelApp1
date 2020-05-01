@@ -8,3 +8,9 @@
 @import '~bootstrap/scss/bootstrap';
 @import '~admin-lte/dist/css/adminlte.css';
 @import '~@fortawesome/fontawesome-free/css/all.css';
+
+
+.nav-link.router-link-exact-active {
+    background-color: #4c50b3;
+    color: white;
+}

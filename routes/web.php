@@ -20,3 +20,13 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+
+Route::get('routeList', function(){
+    \Artisan::call('route:list');
+    return \Artisan::output();
+});
+
+
+
+Route::get('{path}', 'HomeController@index')->where('path','([A-z\d\/_.]+)?');
