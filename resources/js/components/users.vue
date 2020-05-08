@@ -25,9 +25,9 @@
                       <th>Registered At</th>
                       <th>Modify</th>
                     </tr>
-                  </thead>
+                  </thead> 
                   <tbody>
-                    <tr v-for="user in users.data">
+                    <tr v-for="user in users.data" :key="user.id">
                       <td>{{user.id}}</td>
                       <td>{{user.name | capitalaizeFirstText}}</td>
                       <td>{{user.email}}</td>
@@ -241,6 +241,19 @@
             this.loadUsers();
             fireEvent.$on('loadUsers', ()=>{
                 this.loadUsers();
+            });
+            fireEvent.$on('searching', ()=>{
+                let query = this.$parent.search;
+                axios.get('api/findUser?q='+ query)
+                    .then((data)=>{
+                        console.log(data);
+                        this.users = data.data;
+
+                    })
+                    .catch(()=>{
+
+                    });
+
             });
         }
     }

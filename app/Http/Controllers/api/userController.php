@@ -168,4 +168,19 @@ class userController extends Controller
         return ['message'=> 'Profile is successfully updated', 'data' => $user ];
     }
 
+    /** 
+     * find user
+     * 
+     * @return userDatails
+     */
+    
+    public function findUser(Request $request){
+        if($request->q){
+            $user = User::where('name','like',"%$request->q%")->orWhere('email','like',"%$request->q%")->paginate(2);
+        } else {
+            $user = User::latest()->paginate(2);
+        }
+        return $user;
+    }
+
 }

@@ -27,6 +27,10 @@ Route::get('routeList', function(){
     return \Artisan::output();
 });
 
+Route::get('invoice', function (){
+    return view('invoice');
+});
+
 
 
 Route::get('{path}', 'HomeController@index')->where('path','([A-z\d\/_.]+)?');

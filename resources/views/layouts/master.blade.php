@@ -36,9 +36,9 @@ to get the desired effect
     <!-- SEARCH FORM -->
     <form class="form-inline ml-3">
       <div class="input-group input-group-sm">
-        <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
+        <input class="form-control form-control-navbar" v-model="search" @keyup="searchIt" type="search" placeholder="Search" aria-label="Search">
         <div class="input-group-append">
-          <button class="btn btn-navbar" type="submit">
+          <button class="btn btn-navbar" @click.prevent="searchIt">
             <i class="fas fa-search"></i>
           </button>
         </div>

@@ -3421,6 +3421,13 @@ __webpack_require__.r(__webpack_exports__);
     fireEvent.$on('loadUsers', function () {
       _this6.loadUsers();
     });
+    fireEvent.$on('searching', function () {
+      var query = _this6.$parent.search;
+      axios.get('api/findUser?q=' + query).then(function (data) {
+        console.log(data);
+        _this6.users = data.data;
+      })["catch"](function () {});
+    });
   }
 });
 
@@ -46744,7 +46751,7 @@ var render = function() {
                   _c(
                     "tbody",
                     _vm._l(_vm.users.data, function(user) {
-                      return _c("tr", [
+                      return _c("tr", { key: user.id }, [
                         _c("td", [_vm._v(_vm._s(user.id))]),
                         _vm._v(" "),
                         _c("td", [
@@ -62360,6 +62367,9 @@ var routes = [{
 }, {
   path: '/developer',
   component: __webpack_require__(/*! ./components/developer.vue */ "./resources/js/components/developer.vue")["default"]
+}, {
+  path: '*',
+  component: __webpack_require__(/*! ./components/notFound.vue */ "./resources/js/components/notFound.vue")["default"]
 }];
 var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
   mode: 'history',
@@ -62425,7 +62435,18 @@ Vue.component('not-found', __webpack_require__(/*! ./components/notFound.vue */ 
 
 var app = new Vue({
   el: '#app',
-  router: router
+  router: router,
+  data: {
+    search: ''
+  },
+  methods: {
+    searchIt: _.debounce(function () {
+      fireEvent.$emit('searching');
+    }, 1000),
+    printMe: function printMe() {
+      window.print();
+    }
+  }
 });
 
 /***/ }),
