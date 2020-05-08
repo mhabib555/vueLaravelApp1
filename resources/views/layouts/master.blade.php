@@ -158,6 +158,7 @@ to get the desired effect
         </div>
         <div class="info">
           <a href="#" class="d-block">{{ Auth::user()->name }}</a>
+          <a href="#" class="d-block">{{ Auth::user()->type }}</a>
         </div>
       </div>
 
@@ -172,12 +173,14 @@ to get the desired effect
               <p> Dashboard v1</p>
             </router-link>
           </li>
+          @can('isAdmin')
           <li class="nav-item">
             <router-link to="/users" class="nav-link">
               <i class="fas fa-users text-green"></i>
               <p> Users</p>
             </router-link>
           </li>
+          @endcan
           
           <li class="nav-item">
             <router-link to="/profile" class="nav-link">
@@ -185,6 +188,14 @@ to get the desired effect
               <p> Profile</p>
             </router-link>
           </li>
+          @can('isAdmin')
+          <li class="nav-item">
+            <router-link to="/developer" class="nav-link">
+              <i class="fas fa-cogs text-blue"></i>
+              <p> Developer</p>
+            </router-link>
+          </li>
+          @endcan
           <li class="nav-item">
             <a class="nav-link" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
@@ -243,7 +254,11 @@ to get the desired effect
   </footer>
 </div>
 <!-- ./wrapper -->
-
+@auth 
+  <script>
+    window.user = @json(auth()->user())
+  </script>
+@endauth
 <!-- REQUIRED SCRIPTS -->
 <script src="js/app.js"></script>
 

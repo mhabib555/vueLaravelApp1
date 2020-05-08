@@ -1,13 +1,13 @@
 <template>
     <div class="container">
-        <div class="row mt-5">
+        <div class="row mt-5" v-if="$gate.isAdmin()">
           <div class="col-md-12">
             <div class="card">
               <div class="card-header">
                 <h3 class="card-title">Users</h3>
 
                 <div class="card-tools">
-                    <button class="btn btn-success" data-toggle="modal" data-target="#addNewUser">
+                    <button class="btn btn-success" data-toggle="modal" @click="openNewUserModel">
                         Add New
                         <i class="fas fa-user-plus fa-fw"></i>
                     </button>
@@ -27,17 +27,17 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="user in users">
+                    <tr v-for="user in users.data">
                       <td>{{user.id}}</td>
                       <td>{{user.name | capitalaizeFirstText}}</td>
                       <td>{{user.email}}</td>
                       <td><span class="tag tag-success">{{user.type |capitalaizeFirstText}}</span></td>
                       <td>{{user.created_at }}</td>
                       <td>
-                          <a href="#" @click="deleteUser(user.id)">
+                          <a href="#" @click.prevent="openEditUserModel(user)">
                               <i class="fas fa-edit text-orange"></i>
                           </a>
-                          <a href="#">
+                          <a href="#" @click.prevent="deleteUser(user.id)">
                               <i class="fa fa-trash text-red"></i>
                           </a>
                       </td>
@@ -46,21 +46,27 @@
                 </table>
               </div>
               <!-- /.card-body -->
+              <div class="card-footer">
+                  <pagination :data="users" @pagination-change-page="getResults"></pagination>              </div>
             </div>
             <!-- /.card -->
           </div>
         </div>
         <!-- /.row -->
-        <div class="modal" id="addNewUser" tabindex="-1" role="dialog">
+        <div class="row mt-5" v-if="!$gate.isAdmin()">
+            <not-found></not-found>
+        </div>
+        <!-- / not-Found row -->
+        <div class="modal" id="userDataModal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Add New User</h5>
+                        <h5 class="modal-title">{{ editMode ? 'Update User Info' : 'Add New User' }}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form @submit.prevent="createUser" @keydown="form.onKeydown($event)">
+                    <form @submit.prevent="editMode ? updateUser() : createUser()" @keydown="form.onKeydown($event)">
                     <div class="modal-body">
                         <!-- name input -->
                         <div class="form-group">
@@ -100,7 +106,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button :disabled="form.busy" type="submit" class="btn btn-primary">Create</button>
+                        <button :disabled="form.busy" type="submit" class="btn btn-primary">{{ editMode ? 'Update' : 'Create'}}</button>
                         <button type="button" v-on:click="resetNewUserForm" class="btn btn-warning">Reset</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
@@ -108,6 +114,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -115,8 +122,10 @@
     export default {
         data(){
             return{
+                editMode: false,
                 users: {}, 
                 form: new Form({
+                    id: '',
                     name: '',
                     email: '',
                     password: '', 
@@ -130,36 +139,66 @@
             console.log('Component mounted.')
         },
         methods: {
+            openNewUserModel(){
+                this.editMode = false;
+                this.form.reset();
+                $('#userDataModal').modal('show');
+            },
+            openEditUserModel(user){
+                this.editMode = true;
+                $('#userDataModal').modal('show');
+                this.form.clear();
+                this.form.fill(user);
+            },
             createUser(){  
                 this.$Progress.start();
                  // Submit the form via a POST request
                 this.form.post('api/users')
                     .then(({ data }) => { 
                         if(this.form.successful){
-                            $('#addNewUser').modal('hide');
+                            $('#userDataModal').modal('hide');
                             Toast.fire({
                                 icon: 'success',
                                 title: 'User created successfully'
                             })
-                            fireEvent.$emit('newUserCreated');
-                            // this.loadUsers();
+                            fireEvent.$emit('loadUsers');
                             this.$Progress.finish();
                         }
                     });
             },
-            loadUsers(){
+            updateUser(id){  
                 this.$Progress.start();
-                axios.get('api/users').then(({ data }) => {
-                    this.users = data.data;
-                    console.log(data);
-                    this.$Progress.finish();
-                });
+                 // Submit the form via a POST request
+                this.form.put('api/users/'+this.form.id)
+                    .then(({ data }) => { 
+                        if(this.form.successful){
+                            $('#userDataModal').modal('hide');
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'User updated successfully'
+                            })
+                            fireEvent.$emit('loadUsers');
+                            this.$Progress.finish();
+                        }
+                    })
+                    .catch(() => {
+                        this.$Progress.fail();
+                    });
+            },
+            loadUsers(){
+                if(this.$gate.isAdmin()){
+                    this.$Progress.start();
+                    axios.get('api/users').then(({ data }) => {
+                        this.users = data;
+                        this.$Progress.finish();
+                    });
+                }
             },
             resetNewUserForm(){
                 this.form.reset();
             },
-            deleteUser(){
-                Swal.fire({
+            deleteUser(id){
+                swal.fire({
                     title: 'Are you sure?',
                     text: "You won't be able to revert this!",
                     icon: 'warning',
@@ -170,25 +209,37 @@
                 }).then((result) => {
                     if (result.value) {
                         this.$Progress.start();
-                        axios.delete('api/users').then(({ data }) => {
-                            this.users = data;
+                        axios.delete('api/users/'+id).then(({ data }) => {
                             console.log(data);
                             this.$Progress.finish();
+                            fireEvent.$emit('loadUsers');
+                            swal.fire(
+                                'Deleted!',
+                                'Your file has been deleted.',
+                                'success'
+                                )
+                        }).catch(()=>{
+                            swal.fire(
+                                'Error!',
+                                'Unable to delete the file.',
+                                'error'
+                                )
+
                         });
-                        Swal.fire(
-                            'Deleted!',
-                            'Your file has been deleted.',
-                            'success'
-                            )
                     }
                 })
 
-            }
+            },
+            getResults(page = 1) {
+			axios.get('api/users?page=' + page)
+				.then(response => {
+					this.users = response.data;
+				});
+		    }
         },
         created(){
             this.loadUsers();
-            // setInterval(()=>this.loadUsers(),3000);
-            fireEvent.$on('newUserCreated', ()=>{
+            fireEvent.$on('loadUsers', ()=>{
                 this.loadUsers();
             });
         }

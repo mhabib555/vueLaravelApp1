@@ -8,6 +8,10 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
+import Gate from './gate';
+Vue.prototype.$gate = new Gate(window.user);
+console.log(window.user);
+
 // Importing vue router and configuring
 import VueRouter from 'vue-router';
 // var moment = require('moment');
@@ -18,6 +22,7 @@ const routes = [
     { path: '/dashboard', component: require('./components/dashboard.vue').default },
     { path: '/profile', component: require('./components/profile.vue').default },
     { path: '/users', component: require('./components/users.vue').default },
+    { path: '/developer', component: require('./components/developer.vue').default },
 ]
 
 const router = new VueRouter({
@@ -31,6 +36,7 @@ window.Form = Form;
 
 Vue.component(HasError.name, HasError)
 Vue.component(AlertError.name, AlertError)
+Vue.component('pagination', require('laravel-vue-pagination'));
 
 
 
@@ -82,6 +88,27 @@ window.fireEvent = new Vue();
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
+
+Vue.component(
+    'passport-clients',
+    require('./components/passport/Clients.vue').default
+);
+
+Vue.component(
+    'passport-authorized-clients',
+    require('./components/passport/AuthorizedClients.vue').default
+);
+
+Vue.component(
+    'passport-personal-access-tokens',
+    require('./components/passport/PersonalAccessTokens.vue').default
+);
+
+Vue.component(
+    'not-found',
+    require('./components/notFound.vue').default
+);
+
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
